@@ -5,7 +5,7 @@ import { AuthProviders } from "../components/authProvider";
 import DashboardWrapper from "../components/dashboardwrapper";
 //imports para vistas
 import { db } from '../firebase/firebase';
-import { doc, onSnapshot } from 'firebase/firestore';
+import { doc, onSnapshot, getDoc } from 'firebase/firestore';
 //añadir diseño
 import style from "../styles/dashboardwrapper.module.css";
 
@@ -15,7 +15,7 @@ export default function DashboardView() {
   const [state, setState] = useState(0);
   //variables para guardar redes primarias y secundarias
   const [links, setLinks] = useState({
-    whatsApp: 0,
+    whatsapp: 0,
     shareRRSS: 0,
     email: 0,
     phone: 0,
@@ -29,7 +29,6 @@ export default function DashboardView() {
     qrOffline: 0
   });
 
-
   async function handleUserLoggeIn(user) {
     setCurrentUser(user);
     setState(2);
@@ -41,6 +40,29 @@ export default function DashboardView() {
     navigate("/iniciar-sesion");
   }
 
+  async function getVista(idUser) {
+    const docRef = doc(db, "VisitsCounter", idUser);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      console.log("Document data:", docSnap.data());
+      setLinks(docSnap.data())
+    } else {
+      // doc.data() will be undefined in this case
+      console.log("No such document!");
+    }
+  }
+
+  useEffect(() => {
+    if (currentUser.publicId) {
+      // const asyncFetchData = async () => {
+      //   await getVista(currentUser.publicId)
+      // }
+      // asyncFetchData()
+      getVista(currentUser.publicId)
+    }
+  }, [currentUser])
+
+
   if (state === 0) {
     return (
       <AuthProviders
@@ -51,23 +73,27 @@ export default function DashboardView() {
     );
   }
   //obtener la lista de redes por usuario y mistrarlas en su perfil
-  const docRef = doc(db, 'VisitsCounter', currentUser.publicId)
-  onSnapshot(docRef, (doc) => {
-    setLinks({
-      whatsApp: doc.data().whatsapp,
-      shareRRSS: doc.data().shareRRSS,
-      email: doc.data().email,
-      phone: doc.data().phone,
-      maps: doc.data().maps,
-      linkedin: doc.data().linkedin,
-      facebook: doc.data().facebook,
-      instagram: doc.data().instagram,
-      tiktok: doc.data().tiktok,
-      twitter: doc.data().twitter,
-      twitch: doc.data().twitch,
-      qrOffline: doc.data().qrOffline
-    })
-  })
+
+
+
+  //console.log('fsdagadrfg')
+
+  // onSnapshot(docRef, (doc) => {
+  //   setLinks({
+  //     whatsApp: doc.data().whatsapp,
+  //     shareRRSS: doc.data().shareRRSS,
+  //     email: doc.data().email,
+  //     phone: doc.data().phone,
+  //     maps: doc.data().maps,
+  //     linkedin: doc.data().linkedin,
+  //     facebook: doc.data().facebook,
+  //     instagram: doc.data().instagram,
+  //     tiktok: doc.data().tiktok,
+  //     twitter: doc.data().twitter,
+  //     twitch: doc.data().twitch,
+  //     qrOffline: doc.data().qrOffline
+  //   })
+  // })
 
   return (
     <DashboardWrapper >
@@ -75,7 +101,7 @@ export default function DashboardView() {
         <Col>
           <Card className="mt-3">
             <Card.Body>
-              <Card.Title>{links.whatsApp}</Card.Title>
+              <Card.Title>{links.whatsapp}</Card.Title>
               <Card.Text>Whatsapp</Card.Text>
             </Card.Body>
           </Card>
